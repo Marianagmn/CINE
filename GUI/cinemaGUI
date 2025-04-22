@@ -1,0 +1,174 @@
+package GUI;
+
+import Objects.Movies;
+import Objects.Seat;
+import Objects.Function;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+
+public class cinemaGUI {
+    // Listas para almacenar objetos
+    private ArrayList<Movies> moviesList = new ArrayList<>();
+    private ArrayList<Seat> seatsList = new ArrayList<>();
+    private ArrayList<Function> functionsList = new ArrayList<>();
+
+    public static void main(String[] args) {
+        new CinemaGUI().createAndShowGUI();
+    }
+
+    public void createAndShowGUI() {
+        // Crear la ventana principal
+        JFrame frame = new JFrame("Gestión de Cine");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800, 600);
+
+        // Crear el panel de pestañas
+        JTabbedPane tabbedPane = new JTabbedPane();
+
+        // Pestaña de Películas
+        tabbedPane.addTab("Películas", createMoviesPanel());
+
+        // Pestaña de Asientos
+        tabbedPane.addTab("Asientos", createSeatsPanel());
+
+        // Pestaña de Funciones
+        tabbedPane.addTab("Funciones", createFunctionsPanel());
+
+        // Agregar el panel de pestañas a la ventana
+        frame.add(tabbedPane);
+
+        // Mostrar la ventana
+        frame.setVisible(true);
+    }
+
+    private JPanel createMoviesPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+
+        // Tabla para mostrar películas
+        String[] columns = {"Título", "Director", "Género", "Duración", "Clasificación"};
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(model);
+        JScrollPane scrollPane = new JScrollPane(table);
+
+        // Botones
+        JButton addButton = new JButton("Agregar Película");
+        JButton detailsButton = new JButton("Ver Detalles");
+
+        // Panel de botones
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(addButton);
+        buttonPanel.add(detailsButton);
+
+        // Acción para agregar película
+        addButton.addActionListener(e -> {
+            String title = JOptionPane.showInputDialog("Ingrese el título:");
+            String director = JOptionPane.showInputDialog("Ingrese el director:");
+            String genre = JOptionPane.showInputDialog("Ingrese el género:");
+            int minutes = Integer.parseInt(JOptionPane.showInputDialog("Ingrese la duración (minutos):"));
+            String classification = JOptionPane.showInputDialog("Ingrese la clasificación:");
+            String synopsis = JOptionPane.showInputDialog("Ingrese la sinopsis:");
+            String language = JOptionPane.showInputDialog("Ingrese el idioma:");
+
+            Movies movie = new Movies(language, "Elenco no especificado", director, title, genre, minutes, classification, synopsis);
+            moviesList.add(movie);
+
+            model.addRow(new Object[]{title, director, genre, minutes, classification});
+        });
+
+        // Acción para ver detalles
+        detailsButton.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow >= 0) {
+                Movies movie = moviesList.get(selectedRow);
+                JOptionPane.showMessageDialog(panel, movie.getMovieDetails(), "Detalles de la Película", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(panel, "Seleccione una película.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        panel.add(scrollPane, BorderLayout.CENTER);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private JPanel createSeatsPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+
+        // Panel para mostrar asientos
+        JPanel seatsGrid = new JPanel(new GridLayout(5, 5, 5, 5));
+        for (int i = 1; i <= 25; i++) {
+            Seat seat = new Seat(i, "A", true, i % 5 == 0, 10.0);
+            seatsList.add(seat);
+
+            JButton seatButton = new JButton(seat.getSeat());
+            seatButton.setBackground(seat.isAvailable() ? Color.GREEN : Color.RED);
+            seatButton.addActionListener(e -> {
+                if (seat.isAvailable()) {
+                    seat.reserveSeat();
+                    seatButton.setBackground(Color.RED);
+                    JOptionPane.showMessageDialog(panel, "Asiento reservado: " + seat.getSeat());
+                } else {
+                    seat.cancelReservation();
+                    seatButton.setBackground(Color.GREEN);
+                    JOptionPane.showMessageDialog(panel, "Reserva cancelada: " + seat.getSeat());
+                }
+            });
+            seatsGrid.add(seatButton);
+        }
+
+        panel.add(seatsGrid, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JPanel createFunctionsPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+
+        // Tabla para mostrar funciones
+        String[] columns = {"Hora", "Día", "Cine", "Sala", "Formato", "Fecha"};
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(model);
+        JScrollPane scrollPane = new JScrollPane(table);
+
+        // Botones
+        JButton addButton = new JButton("Agregar Función");
+        JButton detailsButton = new JButton("Ver Detalles");
+
+        // Panel de botones
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(addButton);
+        buttonPanel.add(detailsButton);
+
+        // Acción para agregar función
+        addButton.addActionListener(e -> {
+            String hour = JOptionPane.showInputDialog("Ingrese la hora:");
+            String day = JOptionPane.showInputDialog("Ingrese el día:");
+            String cinema = JOptionPane.showInputDialog("Ingrese el cine:");
+            String room = JOptionPane.showInputDialog("Ingrese la sala:");
+            String format = JOptionPane.showInputDialog("Ingrese el formato:");
+            LocalDate date = LocalDate.parse(JOptionPane.showInputDialog("Ingrese la fecha (YYYY-MM-DD):"));
+
+            Function function = new Function(hour, day, cinema, room, format, date);
+            functionsList.add(function);
+
+            model.addRow(new Object[]{hour, day, cinema, room, format, date});
+        });
+
+        // Acción para ver detalles
+        detailsButton.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow >= 0) {
+                Function function = functionsList.get(selectedRow);
+                JOptionPane.showMessageDialog(panel, function.getBriefDescription(), "Detalles de la Función", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(panel, "Seleccione una función.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        panel.add(scrollPane, BorderLayout.CENTER);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+        return panel;
+    }
+}

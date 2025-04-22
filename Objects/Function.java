@@ -1,18 +1,18 @@
 package Objects;
 
-import java.sql.Date;
+import java.time.LocalDate;
 
 public class Function {
     // Attributes
-    private String hour;// 10:00, 12:00, 14:00...
-    private String day;// Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
-    private String cinema;// Cinema name
-    private String room;// Room number
-    private String format;// 2D, 3D, IMAX
-    private Date date; // Date of the function
+    private String hour; // 10:00, 12:00, 14:00...
+    private String day; // Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+    private String cinema; // Cinema name
+    private String room; // Room number
+    private String format; // 2D, 3D, IMAX
+    private LocalDate date; // Date of the function
 
     // Constructor
-    public Function(String hour, String day, String cinema, String room, String format, Date date) {
+    public Function(String hour, String day, String cinema, String room, String format, LocalDate date) {
         this.hour = hour;
         this.day = day;
         this.cinema = cinema;
@@ -22,7 +22,7 @@ public class Function {
     }
 
     // Getters and Setters
- public String getHour() {
+    public String getHour() {
         return hour;
     }
 
@@ -62,18 +62,18 @@ public class Function {
         this.format = format;
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 
     // Methods
 
     // Method to display function details
-    public void FunctionDetails() {
+    public void functionDetails() {
         System.out.println("Function Details:");
         System.out.println("Hour: " + hour);
         System.out.println("Day: " + day);
@@ -82,8 +82,9 @@ public class Function {
         System.out.println("Format: " + format);
         System.out.println("Date: " + date);
     }
+
     // Method to check if the function is available on a specific date
-    public boolean isAvailable(Date date) {
+    public boolean isAvailable(LocalDate date) {
         return this.date.equals(date);
     }
 
