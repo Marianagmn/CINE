@@ -10,7 +10,7 @@ public class Movies {
     private int minutes;// Duration in minutes
     private String classification;// +16, +18, etc.
     private String synopsis;// Movie synopsis
-    
+
     // Constructor
     public Movies(String language, String cast, String director, String title, String gender, int minutes,
             String classification, String synopsis) {
@@ -72,6 +72,17 @@ public class Movies {
     }
     public void setSynopsis(String synopsis) {
         this.synopsis = synopsis;
+    }
+
+    public String getMovieDetails() {
+        return "Title: " + title + "\n" +
+               "Director: " + director + "\n" +
+               "Cast: " + cast + "\n" +
+               "Language: " + language + "\n" +
+               "Gender: " + gender + "\n" +
+               "Duration: " + minutes + " minutes\n" +
+               "Classification: " + classification + "\n" +
+               "Synopsis: " + synopsis;
     }
 
 }

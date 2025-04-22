@@ -53,13 +53,36 @@ public class Seat{
         this.priceStandard = priceStandard;
     }
 
-    // toString method
-    @Override
-    public String toString() {
-        return "Seat{" + getSeat()+
-                "Available= " + available +
-                "VIP= " + VIP +
-                "Price= " + priceStandard +
-                '}';
+    // Methods
+
+    // Method to reserve a seat
+    public void reserveSeat() {
+        if (available) {
+            available = false;
+        } else {
+            System.out.println("Seat " + getSeat() + " is already reserved.");
+        }
     }
+
+    // Method to cancel a reservation
+    public void cancelReservation() {
+        if (!available) {
+            available = true;
+        } else {
+            System.out.println("Seat " + getSeat() + " is already available.");
+        }
+    }
+
+    // Method to get the final price of the seat
+    // If the seat is VIP, the price is 1.5 times the standard price
+        public double getFinalPrice() {
+        return VIP ? priceStandard * 1.5 : priceStandard;
+    }
+
+// Method to get a brief description of the seat
+    public String getBriefDescription() {
+        return "Seat " + getSeat() + " - " + (VIP ? "VIP" : "Standard") + " - " + (available ? "Available" : "Reserved");
+    }
+
+
 }

@@ -70,5 +70,45 @@ public class Function {
         this.date = date;
     }
 
+    // Methods
 
+    // Method to display function details
+    public void FunctionDetails() {
+        System.out.println("Function Details:");
+        System.out.println("Hour: " + hour);
+        System.out.println("Day: " + day);
+        System.out.println("Cinema: " + cinema);
+        System.out.println("Room: " + room);
+        System.out.println("Format: " + format);
+        System.out.println("Date: " + date);
+    }
+    // Method to check if the function is available on a specific date
+    public boolean isAvailable(Date date) {
+        return this.date.equals(date);
+    }
+
+    // Method to check if the function is available on a specific day
+    public boolean isAvailableD(String day) {
+        return this.day.equalsIgnoreCase(day);
+    }
+
+    // Method to check if the function is available at a specific hour
+    public boolean isAvailableH(String hour) {
+        return this.hour.equalsIgnoreCase(hour);
+    }
+
+    // Method to check if the function is available in a specific cinema
+    public boolean isAvailableC(String cinema) {
+        return this.cinema.equalsIgnoreCase(cinema);
+    }
+
+    // Method to check if the function is available in a specific format
+    public boolean isFormat(String format) {
+        return this.format.equalsIgnoreCase(format);
+    }
+
+    // Method to get a brief description of the function
+    public String getBriefDescription() {
+        return "Cinema: " + cinema + ", Room: " + room + ", Format: " + format + ", Hour: " + hour;
+    }
 }
