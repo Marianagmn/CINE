@@ -1,20 +1,27 @@
 package Objects;
-public class Seat {
+public class Seats {
     // Attributes
-    private int num; // Número de asiento
-    private String letter; // Letra del asiento
-    private boolean available; // true = disponible, false = no disponible
+    private int num; // Seat number
+    private String letter; // Letter of the seat (A, B, C, etc.)
+    private boolean available; // true = available, false = reserved
     private boolean isVIP; // true = VIP, false = normal
-    private double priceStandard; // Precio estándar
+    private double priceStandard; // Standard price of the seat
 
     // Constructor
-    public Seat(int num, String letter, boolean available, boolean isVIP, double priceStandard) {
+    public Seats(int num, String letter, boolean available, boolean isVIP, double priceStandard) {
+
+      // Validate inputs
+        if (letter == null || letter.length() != 1) {
+            throw new IllegalArgumentException("La letra del asiento debe ser una sola letra.");
+        }
         if (num <= 0) {
             throw new IllegalArgumentException("El número de asiento debe ser positivo.");
         }
         if (priceStandard < 0) {
             throw new IllegalArgumentException("El precio no puede ser negativo.");
         }
+
+        // Initialize attributes
         this.num = num;
         this.letter = letter;
         this.available = available;
@@ -23,63 +30,58 @@ public class Seat {
     }
 
     // Getters and Setters
+
     public String getSeat() {
-        return letter + num; 
-    }
+        return letter + num;
+    } // Returns the seat in the format "A1", "B2", etc.
 
     public int getNum() {
-        return num; 
+        return num;
     }
 
     public void setNum(int num) {
-        if (num <= 0) {
-            throw new IllegalArgumentException("El número de asiento debe ser positivo.");
-        }
-        this.num = num; 
+        this.num = num;
     }
 
     public String getLetter() {
-        return letter; 
+        return letter;
     }
 
     public void setLetter(String letter) {
-        this.letter = letter; 
+        this.letter = letter;
     }
 
     public boolean isAvailable() {
-        return available; 
+        return available;
     }
 
     public void setAvailable(boolean available) {
-        this.available = available; 
+        this.available = available;
     }
 
     public boolean isVIP() {
-        return isVIP; 
+        return isVIP;
     }
 
     public void setVIP(boolean isVIP) {
-        this.isVIP = isVIP; // Establece si el asiento es VIP
+        this.isVIP = isVIP;
     }
 
     public double getPriceStandard() {
-        return priceStandard; // Devuelve el precio estándar del asiento
+        return priceStandard;
     }
 
     public void setPriceStandard(double priceStandard) {
-        if (priceStandard < 0) {
-            throw new IllegalArgumentException("El precio no puede ser negativo.");
-        }
-        this.priceStandard = priceStandard; // Establece el precio estándar del asiento
+        this.priceStandard = priceStandard;
     }
 
     // Methods
 
-       // Method to reserve a seat
+    // Method to reserve a seat
 
     public void reserveSeat() {
         if (available) {
-            available = false; // Cambia la disponibilidad a no disponible
+            available = false; // Change the availability to reserved
         } else {
             System.out.println("El asiento " + getSeat() + " ya está reservado.");
         }
@@ -89,13 +91,13 @@ public class Seat {
 
     public void cancelReservation() {
         if (!available) {
-            available = true; // Cambia la disponibilidad a disponible
+            available = true; // change the availability to available
         } else {
             System.out.println("El asiento " + getSeat() + " ya está disponible.");
         }
     }
 
-       // Method to get the final price of the seat
+    // Method to get the final price of the seat
     // If the seat is VIP, the price is 1.5 times the standard price
 
     public double getFinalPrice() {
@@ -103,7 +105,6 @@ public class Seat {
     }
 
    // Method to get a brief description of the seat
-
     public String getBriefDescription() {
         return "Asiento " + getSeat() + " - " + (isVIP ? "VIP" : "Estándar") + " - " + (available ? "Disponible" : "Reservado");
     }

@@ -13,6 +13,9 @@ public class Function {
 
     // Constructor
     public Function(String hour, String day, String cinema, String room, String format, LocalDate date) {
+        // Validate inputs
+        
+        //Initialize attributes
         this.hour = hour;
         this.day = day;
         this.cinema = cinema;

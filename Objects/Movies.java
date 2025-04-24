@@ -11,8 +11,10 @@ public class Movies {
     private String synopsis; // Movie synopsis
 
     // Constructor
-    public Movies(String language, String cast, String director, String title, String genre, int minutes,
-                  String classification, String synopsis) {
+    public Movies(String language, String cast, String director, String title, String genre, int minutes, String classification, String synopsis) {
+        // Validate inputs
+
+        //Initialize attributes
         this.language = language;
         this.cast = cast;
         this.director = director;
@@ -69,9 +71,6 @@ public class Movies {
     }
 
     public void setMinutes(int minutes) {
-        if (minutes < 0) {
-            throw new IllegalArgumentException("Duration cannot be negative.");
-        }
         this.minutes = minutes;
     }
 

@@ -1,7 +1,7 @@
 package GUI;
 
 import Objects.Movies;
-import Objects.Seat;
+import Objects.Seats;
 import Objects.Function;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -13,9 +13,9 @@ import java.util.HashMap;
 public class CinemaGUI {
     // Lists to store objects
     private ArrayList<Movies> moviesList = new ArrayList<>();
-    private ArrayList<Seat> seatsList = new ArrayList<>();
+    private ArrayList<Seats> seatsList = new ArrayList<>();
     private ArrayList<Function> functionsList = new ArrayList<>();
-    private HashMap<String, ArrayList<Seat>> reservedSeatsMap = new HashMap<>();
+    private HashMap<String, ArrayList<Seats>> reservedSeatsMap = new HashMap<>();
 
     private JComboBox<String> movieSelector;
     private JComboBox<String> functionSelector;
@@ -37,7 +37,7 @@ public class CinemaGUI {
 
         // Predefined seats
         for (int i = 1; i <= 25; i++) {
-            seatsList.add(new Seat(i, "A", true, i % 5 == 0, 10.0));
+            seatsList.add(new Seats(i, "A", true, i % 5 == 0, 10.0));
         }
     }
 
@@ -144,9 +144,9 @@ public class CinemaGUI {
         String key = selectedMovie + " - " + selectedFunction;
 
         // Get reserved seats for the selected combination
-        ArrayList<Seat> reservedSeats = reservedSeatsMap.getOrDefault(key, new ArrayList<>());
+        ArrayList<Seats> reservedSeats = reservedSeatsMap.getOrDefault(key, new ArrayList<>());
 
-        for (Seat seat : seatsList) {
+        for (Seats seat : seatsList) {
             JButton seatButton = new JButton(seat.getSeat());
             seatButton.setBackground(reservedSeats.contains(seat) ? Color.RED : Color.GREEN);
             seatButton.addActionListener(e -> {
