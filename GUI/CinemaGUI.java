@@ -1,16 +1,17 @@
 package GUI;
 
+import Objects.Function;
 import Objects.Movies;
 import Objects.Seats;
-import Objects.Function;
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 public class CinemaGUI {
+
     // Lists to store objects
     private ArrayList<Movies> moviesList = new ArrayList<>();
     private ArrayList<Seats> seatsList = new ArrayList<>();
@@ -136,6 +137,12 @@ public class CinemaGUI {
     }
 
     private void updateSeatsGrid() {
+        // Validation for movie and function selection
+        if (movieSelector.getSelectedItem() == null || functionSelector.getSelectedItem() == null) {
+
+            JOptionPane.showMessageDialog(null, "Please select a movie and a function.", "Invalid Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         seatsGrid.removeAll();
 
         // Get selected movie and function
