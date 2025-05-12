@@ -15,6 +15,18 @@ public class Movies {
     public String getTitle() {
         return title;
     }
+    
+    public String getGenre() {
+        return genre;
+    }
+    
+    public String getClassification() {  // Method name to match what's used in CinemaGUI
+        return rating;
+    }
+    
+    public String getSinopsis() {  // Method name to match what's used in CinemaGUI
+        return description;
+    }
 
     @Override
     public String toString() {
