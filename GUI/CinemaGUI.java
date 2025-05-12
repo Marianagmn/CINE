@@ -1,175 +1,203 @@
-package GUI;
-
-import Objects.Function;
-import Objects.Movies;
-import Objects.Seats;
-import java.awt.*;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import Objects.City;
+import Objects.Cinema;
+import Objects.Function;
+import Objects.Movies;
+import DB.DBManager; 
+
 
 public class CinemaGUI {
+    private JFrame frame;
+    private JComboBox<City> citySelector;
+    private JComboBox<Cinema> theaterSelector;
+    private JComboBox<Function> functionSelector;
+    private JComboBox<String> comboSelector;
+    private JButton[][] seats;
+    private JTextArea cartArea;
+    private java.util.List<String> cart;
 
-    // Lists to store objects
-    private ArrayList<Movies> moviesList = new ArrayList<>();
-    private ArrayList<Seats> seatsList = new ArrayList<>();
-    private ArrayList<Function> functionsList = new ArrayList<>();
-    private HashMap<String, ArrayList<Seats>> reservedSeatsMap = new HashMap<>();
-
-    private JComboBox<String> movieSelector;
-    private JComboBox<String> functionSelector;
-    private JPanel seatsGrid;
-
-    public static void main(String[] args) {
-        new CinemaGUI().createAndShowGUI();
-    }
+    private java.util.List<City> cities = new ArrayList<>();
+    private java.util.List<Cinema> cinemas = new ArrayList<>();
+    private java.util.List<Movies> movies = new ArrayList<>();
+    private java.util.List<Function> functionsList = new ArrayList<>();
 
     public CinemaGUI() {
-        // Predefined movies
-        moviesList.add(new Movies("English", "Actor1, Actor2", "Director1", "Movie1", "Action", 120, "+16", "Synopsis1"));
-        moviesList.add(new Movies("Spanish", "Actor3, Actor4", "Director2", "Movie2", "Comedy", 90, "+13", "Synopsis2"));
-        moviesList.add(new Movies("English", "Actor5, Actor6", "Director3", "Movie3", "Drama", 150, "+18", "Synopsis3"));
-
-        // Predefined functions
-        functionsList.add(new Function("10:00", "Monday", "Cinema1", "Room1", "2D", LocalDate.now()));
-        functionsList.add(new Function("12:00", "Monday", "Cinema1", "Room2", "3D", LocalDate.now()));
-
-        // Predefined seats
-        for (int i = 1; i <= 25; i++) {
-            seatsList.add(new Seats(i, "A", true, i % 5 == 0, 10.0));
-        }
+        DBManager.initDatabase();
+        initializeData();
+        createAndShowGUI();
     }
 
-    public void createAndShowGUI() {
-        // Create the main window
-        JFrame frame = new JFrame("Cinema Management");
+    private void initializeData() {
+        City medellin = new City("Medellin");
+        City bogota = new City("Bogota");
+        cities.add(medellin);
+        cities.add(bogota);
+
+        for (int i = 1; i <= 3; i++) {
+            cinemas.add(new Cinema("Cine Medellin " + i));
+            cinemas.add(new Cinema("Cine Bogota " + i));
+        }
+
+        Movies m1 = new Movies("Avengers", "Action", "PG-13", "Superheroes saving the world");
+        Movies m2 = new Movies("Barbie", "Fantasy", "PG", "A doll's journey");
+        Movies m3 = new Movies("Oppenheimer", "Drama", "R", "The atomic bomb story");
+
+        movies.add(m1);
+        movies.add(m2);
+        movies.add(m3);
+
+        functionsList.add(new Function(m1, "3:00 PM"));
+        functionsList.add(new Function(m2, "5:00 PM"));
+        functionsList.add(new Function(m3, "8:00 PM"));
+    }
+
+    private void createAndShowGUI() {
+        frame = new JFrame("Cinema System");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 600);
+        frame.setSize(900, 600);
+        frame.setLayout(new FlowLayout());
 
-        // Create the tabbed panel
-        JTabbedPane tabbedPane = new JTabbedPane();
+        citySelector = new JComboBox<>(cities.toArray(new City[0]));
+        theaterSelector = new JComboBox<>();
+        functionSelector = new JComboBox<>();
 
-        // Movies tab
-        tabbedPane.addTab("Movies", createMoviesPanel());
+        citySelector.addActionListener(e -> {
+            theaterSelector.removeAllItems();
+            City selected = (City) citySelector.getSelectedItem();
+            if (selected != null) {
+                for (Cinema c : cinemas) {
+                    if (c.getNombre().contains(selected.getName())) {
+                        theaterSelector.addItem(c);
+                    }
+                }
+            }
+        });
 
-        // Functions tab
-        tabbedPane.addTab("Functions", createFunctionsPanel());
+        theaterSelector.addActionListener(e -> {
+            functionSelector.removeAllItems();
+            for (Function f : functionsList) {
+                functionSelector.addItem(f);
+            }
+        });
 
-        // Seats tab
-        tabbedPane.addTab("Seats", createSeatsPanel());
+        comboSelector = new JComboBox<>(new String[]{"No Combo", "Personal Combo", "Family Combo", "Duo Combo"});
 
-        // Add the tabbed panel to the window
-        frame.add(tabbedPane);
+        JPanel seatsPanel = new JPanel(new GridLayout(5, 5));
+        seats = new JButton[5][5];
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                JButton btn = new JButton((char)('A' + i) + String.valueOf(j + 1));
+                btn.setBackground(Color.GREEN);
+                int row = i, col = j;
+                btn.addActionListener(e -> {
+                    btn.setBackground(Color.RED);
+                    String seatCode = (char)('A' + row) + String.valueOf(col + 1);
+                    Cinema theater = (Cinema) theaterSelector.getSelectedItem();
+                    City city = (City) citySelector.getSelectedItem();
+                    Function selectedFunction = (Function) functionSelector.getSelectedItem();
+                    String combo = (String) comboSelector.getSelectedItem();
+                    int price = 15000 + switch (combo) {
+                        case "Personal Combo" -> 8000;
+                        case "Family Combo" -> 12000;
+                        case "Duo Combo" -> 10000;
+                        default -> 0;
+                    };
 
-        // Show the window
+                    String item = "Ticket for " + selectedFunction.getMovie().getTitle()
+                        + " at " + selectedFunction.getTime()
+                        + " in " + theater.getNombre() + " (" + city.getName() + ")"
+                        + ", Seat: " + seatCode + ", Combo: " + combo + ", Total: $" + price;
+
+                    cart.add(item);
+                    DBManager.saveTicket(
+                        selectedFunction.getMovie().getTitle(),
+                        selectedFunction.getTime(),
+                        theater.getNombre(),
+                        city.getName(),
+                        seatCode,
+                        combo,
+                        price
+                    );
+                    updateCartDisplay();
+                });
+                seats[i][j] = btn;
+                seatsPanel.add(btn);
+            }
+        }
+
+        cartArea = new JTextArea(10, 40);
+        cartArea.setEditable(false);
+        cart = new ArrayList<>();
+
+        JButton clearButton = new JButton("Clear Cart");
+        clearButton.addActionListener(e -> {
+            cart.clear();
+            updateCartDisplay();
+        });
+
+        JButton viewTicketsButton = new JButton("View Sold Tickets");
+        viewTicketsButton.addActionListener(e -> showTicketsWindow());
+
+        frame.add(new JLabel("Select City:"));
+        frame.add(citySelector);
+        frame.add(new JLabel("Select Theater:"));
+        frame.add(theaterSelector);
+        frame.add(new JLabel("Select Showtime:"));
+        frame.add(functionSelector);
+        frame.add(new JLabel("Select Combo:"));
+        frame.add(comboSelector);
+        frame.add(seatsPanel);
+        frame.add(new JScrollPane(cartArea));
+        frame.add(clearButton);
+        frame.add(viewTicketsButton);
+
         frame.setVisible(true);
     }
 
-    private JPanel createMoviesPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
+    private void updateCartDisplay() {
+        cartArea.setText("");
+        for (String item : cart) {
+            cartArea.append(item + "\n");
+        }
+    }
 
-        // Table to display movies
-        String[] columns = {"Title", "Director", "Genre", "Duration", "Classification"};
+    private void showTicketsWindow() {
+        JFrame ticketFrame = new JFrame("Sold Tickets");
+        ticketFrame.setSize(700, 400);
+        ticketFrame.setLayout(new BorderLayout());
+
+        String[] columns = {"ID", "Movie", "Time", "Theater", "City", "Seat", "Combo", "Total"};
         DefaultTableModel model = new DefaultTableModel(columns, 0);
         JTable table = new JTable(model);
-        JScrollPane scrollPane = new JScrollPane(table);
 
-        // Load predefined movies into the table
-        for (Movies movie : moviesList) {
-            model.addRow(new Object[]{movie.getTitle(), movie.getDirector(), movie.getGenre(), movie.getMinutes(), movie.getClassification()});
+        try (var rs = DBManager.getAllTickets()) {
+            while (rs != null && rs.next()) {
+                Object[] row = {
+                    rs.getInt("id"),
+                    rs.getString("movie"),
+                    rs.getString("time"),
+                    rs.getString("theater"),
+                    rs.getString("city"),
+                    rs.getString("seat"),
+                    rs.getString("combo"),
+                    rs.getInt("total")
+                };
+                model.addRow(row);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        panel.add(scrollPane, BorderLayout.CENTER);
-        return panel;
+        ticketFrame.add(new JScrollPane(table), BorderLayout.CENTER);
+        ticketFrame.setVisible(true);
     }
 
-    private JPanel createFunctionsPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-
-        // Table to display functions
-        String[] columns = {"Hour", "Day", "Cinema", "Room", "Format", "Date"};
-        DefaultTableModel model = new DefaultTableModel(columns, 0);
-        JTable table = new JTable(model);
-        JScrollPane scrollPane = new JScrollPane(table);
-
-        // Load predefined functions into the table
-        for (Function function : functionsList) {
-            model.addRow(new Object[]{function.getHour(), function.getDay(), function.getCinema(), function.getRoom(), function.getFormat(), function.getDate()});
-        }
-
-        panel.add(scrollPane, BorderLayout.CENTER);
-        return panel;
-    }
-
-    private JPanel createSeatsPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-
-        // Movie selector
-        movieSelector = new JComboBox<>();
-        for (Movies movie : moviesList) {
-            movieSelector.addItem(movie.getTitle());
-        }
-
-        // Function selector
-        functionSelector = new JComboBox<>();
-        for (Function function : functionsList) {
-            functionSelector.addItem(function.getCinema() + " - " + function.getRoom() + " (" + function.getHour() + ")");
-        }
-
-        // Seats grid
-        seatsGrid = new JPanel(new GridLayout(5, 5, 5, 5));
-        updateSeatsGrid();
-
-        // Action listeners for selectors
-        movieSelector.addActionListener(e -> updateSeatsGrid());
-        functionSelector.addActionListener(e -> updateSeatsGrid());
-
-        // Add components to panel
-        JPanel selectorsPanel = new JPanel(new GridLayout(1, 2));
-        selectorsPanel.add(movieSelector);
-        selectorsPanel.add(functionSelector);
-
-        panel.add(selectorsPanel, BorderLayout.NORTH);
-        panel.add(seatsGrid, BorderLayout.CENTER);
-        return panel;
-    }
-
-    private void updateSeatsGrid() {
-        // Validation for movie and function selection
-        if (movieSelector.getSelectedItem() == null || functionSelector.getSelectedItem() == null) {
-
-            JOptionPane.showMessageDialog(null, "Please select a movie and a function.", "Invalid Selection", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        seatsGrid.removeAll();
-
-        // Get selected movie and function
-        String selectedMovie = (String) movieSelector.getSelectedItem();
-        String selectedFunction = (String) functionSelector.getSelectedItem();
-        String key = selectedMovie + " - " + selectedFunction;
-
-        // Get reserved seats for the selected combination
-        ArrayList<Seats> reservedSeats = reservedSeatsMap.getOrDefault(key, new ArrayList<>());
-
-        for (Seats seat : seatsList) {
-            JButton seatButton = new JButton(seat.getSeat());
-            seatButton.setBackground(reservedSeats.contains(seat) ? Color.RED : Color.GREEN);
-            seatButton.addActionListener(e -> {
-                if (reservedSeats.contains(seat)) {
-                    reservedSeats.remove(seat);
-                    seatButton.setBackground(Color.GREEN);
-                } else {
-                    reservedSeats.add(seat);
-                    seatButton.setBackground(Color.RED);
-                }
-                reservedSeatsMap.put(key, reservedSeats);
-            });
-            seatsGrid.add(seatButton);
-        }
-
-        seatsGrid.revalidate();
-        seatsGrid.repaint();
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(CinemaGUI::new);
     }
 }
+
