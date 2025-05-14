@@ -1,23 +1,23 @@
 package GUI;
-import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
+
+import DB.DBManager;
+import Objects.Cinema;
+import Objects.City;
+import Objects.Function;
+import Objects.Movies;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import Objects.City;
-import Objects.Cinema;
-import Objects.Function;
-import Objects.Movies;
-import DB.DBManager; 
+import java.util.*;
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 
 public class CinemaGUI {
+
     private JFrame frame;
     private JComboBox<City> citySelector;
     private JComboBox<Cinema> theaterSelector;
@@ -47,26 +47,42 @@ public class CinemaGUI {
         cities.add(medellin);
         cities.add(bogota);
 
-        // Initialize cinemas
-        for (int i = 1; i <= 3; i++) {
-            cinemas.add(new Cinema("Cine Medellin " + i));
-            cinemas.add(new Cinema("Cine Bogota " + i));
-        }
+        // Initialize cinemas with specific names
+        // Medellin cinemas
+        cinemas.add(new Cinema("Cinema Medellin Downtown"));
+        cinemas.add(new Cinema("Cinema Medellin North"));
+        cinemas.add(new Cinema("Cinema Medellin Sur"));
+        // Bogota cinemas
+        cinemas.add(new Cinema("Cinema Bogota Downtown"));
+        cinemas.add(new Cinema("Cinema Bogota North"));
+        cinemas.add(new Cinema("Cinema Bogota South"));
 
-        // Initialize movies
-        Movies m1 = new Movies("Avengers", "Action", "PG-13", "Superheroes saving the world");
-        Movies m2 = new Movies("Barbie", "Fantasy", "PG", "A doll's journey");
-        Movies m3 = new Movies("Oppenheimer", "Drama", "R", "The atomic bomb story");
+        // Initialize movies in English
+        Movies m1 = new Movies("Avengers", "Action", "PG-13", "Superheroes saving the world.");
+        Movies m2 = new Movies("Barbie", "Fantasy", "PG", "A doll's journey.");
+        Movies m3 = new Movies("Oppenheimer", "Drama", "R", "The atomic bomb story.");
+        Movies m4 = new Movies("The Lion King", "Animation", "PG", "A young lion prince’s journey.");
+        Movies m5 = new Movies("Inception", "Sci-Fi", "PG-13", "A thief steals secrets through dream-sharing.");
+        Movies m6 = new Movies("Frozen II", "Animation", "PG", "Elsa and Anna embark on a new adventure.");
 
         movies.add(m1);
         movies.add(m2);
         movies.add(m3);
+        movies.add(m4);
+        movies.add(m5);
+        movies.add(m6);
 
-        // Initialize functions
+        // Initialize functions (movie showtimes)
+        // Original afternoon/evening functions
         functionsList.add(new Function(m1, "3:00 PM"));
         functionsList.add(new Function(m2, "5:00 PM"));
         functionsList.add(new Function(m3, "8:00 PM"));
-        
+
+        // Morning functions (before 12 PM) with special pricing
+        functionsList.add(new Function(m4, "9:00 AM"));
+        functionsList.add(new Function(m5, "10:30 AM"));
+        functionsList.add(new Function(m6, "11:45 AM"));
+
         // Initialize combo prices
         comboPrices = new HashMap<>();
         comboPrices.put("No Combo", 0);
@@ -85,7 +101,7 @@ public class CinemaGUI {
         // Create top panel for selections
         JPanel selectionPanel = new JPanel(new GridLayout(2, 4, 10, 5));
         selectionPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        
+
         // City Selector
         JPanel cityPanel = new JPanel(new BorderLayout());
         cityPanel.add(new JLabel("Select City:"), BorderLayout.NORTH);
@@ -122,23 +138,23 @@ public class CinemaGUI {
         movieDetails.setWrapStyleWord(true);
         movieDetailsPanel.add(new JLabel("Movie Details:"), BorderLayout.NORTH);
         movieDetailsPanel.add(new JScrollPane(movieDetails), BorderLayout.CENTER);
-        
+
         // Ticket Price Panel
         JPanel ticketPricePanel = new JPanel(new BorderLayout());
         JLabel ticketPriceLabel = new JLabel("Base Ticket Price: $15,000");
         ticketPricePanel.add(ticketPriceLabel, BorderLayout.NORTH);
-        
+
         // View Tickets Button Panel
         JPanel viewTicketsPanel = new JPanel(new BorderLayout());
         JButton viewTicketsButton = new JButton("View All Tickets");
         viewTicketsButton.addActionListener(e -> showTicketsWindow());
         viewTicketsPanel.add(viewTicketsButton, BorderLayout.CENTER);
-        
+
         // Add additional panels to the second row
         selectionPanel.add(movieDetailsPanel);
         selectionPanel.add(ticketPricePanel);
         selectionPanel.add(viewTicketsPanel);
-        
+
         // Legend Panel
         JPanel legendPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton availableSample = new JButton("Available");
@@ -150,12 +166,12 @@ public class CinemaGUI {
         JButton selectedSample = new JButton("Selected");
         selectedSample.setBackground(Color.BLUE);
         selectedSample.setEnabled(false);
-        
+
         legendPanel.add(new JLabel("Legend: "));
         legendPanel.add(availableSample);
         legendPanel.add(reservedSample);
         legendPanel.add(selectedSample);
-        
+
         selectionPanel.add(legendPanel);
 
         // City selector listener
@@ -172,7 +188,7 @@ public class CinemaGUI {
                     theaterSelector.setSelectedIndex(0);
                 }
             }
-        });    
+        });
 
         // Theater selector listener
         theaterSelector.addActionListener(e -> {
@@ -192,16 +208,16 @@ public class CinemaGUI {
                 // Update movie details
                 Movies movie = selectedFunction.getMovie();
                 movieDetails.setText(
-                    "Title: " + movie.getTitle() + "\n" +
-                    "Genre: " + movie.getGenre() + "\n" +
-                    "Rating: " + movie.getClassification() + "\n" +
-                    "Synopsis: " + movie.getSinopsis()
+                        "Title: " + movie.getTitle() + "\n"
+                        + "Genre: " + movie.getGenre() + "\n"
+                        + "Rating: " + movie.getClassification() + "\n"
+                        + "Synopsis: " + movie.getSinopsis()
                 );
-                
+
                 updateSeatsAvailability();
             }
         });
-        
+
         // Combo selector listener to show price
         comboSelector.addActionListener(e -> {
             String selectedCombo = (String) comboSelector.getSelectedItem();
@@ -223,14 +239,14 @@ public class CinemaGUI {
         screenPanel.setPreferredSize(new Dimension(500, 30));
         screenPanel.setBackground(Color.GRAY);
         screenPanel.setBorder(BorderFactory.createTitledBorder("Screen"));
-        
+
         // Seats Panel
         JPanel seatsPanel = new JPanel(new GridLayout(5, 5, 5, 5));
         seatsPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
         seats = new JButton[5][5];
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
-                JButton btn = new JButton((char)('A' + i) + String.valueOf(j + 1));
+                JButton btn = new JButton((char) ('A' + i) + String.valueOf(j + 1));
                 btn.setPreferredSize(new Dimension(60, 60));
                 btn.setBackground(Color.GREEN);
                 int row = i, col = j;
@@ -239,7 +255,7 @@ public class CinemaGUI {
                 seatsPanel.add(btn);
             }
         }
-        
+
         // Combine screen and seats in a cinema panel
         JPanel cinemaPanel = new JPanel(new BorderLayout());
         cinemaPanel.add(screenPanel, BorderLayout.NORTH);
@@ -258,11 +274,11 @@ public class CinemaGUI {
         JButton clearButton = new JButton("Clear Cart");
         clearButton.addActionListener(e -> {
             if (!cart.isEmpty()) {
-                int response = JOptionPane.showConfirmDialog(frame, 
-                    "Are you sure you want to clear all selected tickets?", 
-                    "Confirm Clear", 
-                    JOptionPane.YES_NO_OPTION);
-                    
+                int response = JOptionPane.showConfirmDialog(frame,
+                        "Are you sure you want to clear all selected tickets?",
+                        "Confirm Clear",
+                        JOptionPane.YES_NO_OPTION);
+
                 if (response == JOptionPane.YES_OPTION) {
                     cart.clear();
                     updateSeatsAvailability();
@@ -274,36 +290,36 @@ public class CinemaGUI {
         JButton purchaseButton = new JButton("Purchase Tickets");
         purchaseButton.addActionListener(e -> {
             if (cart.isEmpty()) {
-                JOptionPane.showMessageDialog(frame, 
-                    "Please select at least one seat before purchasing.", 
-                    "No Tickets Selected", 
-                    JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(frame,
+                        "Please select at least one seat before purchasing.",
+                        "No Tickets Selected",
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            
+
             // Show confirmation dialog with total
             int total = calculateTotal();
-            int response = JOptionPane.showConfirmDialog(frame, 
-                "Total purchase amount: $" + total + "\nProceed with purchase?", 
-                "Confirm Purchase", 
-                JOptionPane.YES_NO_OPTION);
-                
+            int response = JOptionPane.showConfirmDialog(frame,
+                    "Total purchase amount: $" + total + "\nProceed with purchase?",
+                    "Confirm Purchase",
+                    JOptionPane.YES_NO_OPTION);
+
             if (response == JOptionPane.YES_OPTION) {
                 // Confirm all tickets in the cart
                 boolean allConfirmed = confirmAllTickets();
                 if (allConfirmed) {
-                    JOptionPane.showMessageDialog(frame, 
-                        "Purchase successful! Thank you for your purchase.", 
-                        "Purchase Complete", 
-                        JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(frame,
+                            "Purchase successful! Thank you for your purchase.",
+                            "Purchase Complete",
+                            JOptionPane.INFORMATION_MESSAGE);
                     cart.clear();
                     updateCartDisplay();
                     updateSeatsAvailability();
                 } else {
-                    JOptionPane.showMessageDialog(frame, 
-                        "There was an error processing some tickets. Please try again.", 
-                        "Purchase Error", 
-                        JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame,
+                            "There was an error processing some tickets. Please try again.",
+                            "Purchase Error",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -315,7 +331,7 @@ public class CinemaGUI {
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.add(cartScrollPane, BorderLayout.CENTER);
         rightPanel.add(buttonsPanel, BorderLayout.SOUTH);
-        
+
         contentPanel.add(cinemaPanel, BorderLayout.CENTER);
         contentPanel.add(rightPanel, BorderLayout.EAST);
 
@@ -340,23 +356,23 @@ public class CinemaGUI {
         City city = (City) citySelector.getSelectedItem();
 
         if (selectedFunction == null || combo == null || theater == null || city == null) {
-            JOptionPane.showMessageDialog(frame, 
-                "Please select City, Theater, Showtime, and Combo before selecting a seat.", 
-                "Selection Error", 
-                JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(frame,
+                    "Please select City, Theater, Showtime, and Combo before selecting a seat.",
+                    "Selection Error",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         // Check seat availability
-        String seatCode = (char)('A' + row) + String.valueOf(col + 1);
+        String seatCode = (char) ('A' + row) + String.valueOf(col + 1);
         if (!DBManager.isSeatAvailable(
-            selectedFunction.getMovie().getTitle(), 
-            selectedFunction.getTime(), 
-            seatCode)) {
-            JOptionPane.showMessageDialog(frame, 
-                "Sorry, this seat is already taken.", 
-                "Seat Unavailable", 
-                JOptionPane.ERROR_MESSAGE);
+                selectedFunction.getMovie().getTitle(),
+                selectedFunction.getTime(),
+                seatCode)) {
+            JOptionPane.showMessageDialog(frame,
+                    "Sorry, this seat is already taken.",
+                    "Seat Unavailable",
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -366,34 +382,34 @@ public class CinemaGUI {
 
         // Create ticket details
         String item = String.format("%-15s %s\n%-15s %s\n%-15s %s\n%-15s %s\n%-15s %s\n%-15s $%,d\n%s\n",
-            "Movie:", selectedFunction.getMovie().getTitle(),
-            "Time:", selectedFunction.getTime(),
-            "Theater:", theater.getNombre(),
-            "City:", city.getName(),
-            "Seat:", seatCode,
-            "Total:", price,
-            "-------------------------------------------");
+                "Movie:", selectedFunction.getMovie().getTitle(),
+                "Time:", selectedFunction.getTime(),
+                "Theater:", theater.getNombre(),
+                "City:", city.getName(),
+                "Seat:", seatCode,
+                "Total:", price,
+                "-------------------------------------------");
 
         // Save ticket to database - FIX FOR LINE 194
         try {
             boolean saved = DBManager.saveTicket(
-                selectedFunction.getMovie().getTitle(),
-                selectedFunction.getTime(),
-                theater.getNombre(),
-                city.getName(),
-                seatCode,
-                combo,
-                price
+                    selectedFunction.getMovie().getTitle(),
+                    selectedFunction.getTime(),
+                    theater.getNombre(),
+                    city.getName(),
+                    seatCode,
+                    combo,
+                    price
             );
-            
+
             if (!saved) {
-                JOptionPane.showMessageDialog(frame, 
-                    "There was an error saving this ticket. Please try again.", 
-                    "Save Error", 
-                    JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame,
+                        "There was an error saving this ticket. Please try again.",
+                        "Save Error",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
+
             // Update UI
             JButton btn = seats[row][col];
             btn.setBackground(Color.BLUE);
@@ -401,30 +417,32 @@ public class CinemaGUI {
             updateCartDisplay();
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(frame, 
-                "Error: " + ex.getMessage(), 
-                "Ticket Error", 
-                JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frame,
+                    "Error: " + ex.getMessage(),
+                    "Ticket Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void updateSeatsAvailability() {
         Function selectedFunction = (Function) functionSelector.getSelectedItem();
-        if (selectedFunction == null) return;
+        if (selectedFunction == null) {
+            return;
+        }
 
         for (int i = 0; i < seats.length; i++) {
             for (int j = 0; j < seats[i].length; j++) {
-                String seatCode = (char)('A' + i) + String.valueOf(j + 1);
+                String seatCode = (char) ('A' + i) + String.valueOf(j + 1);
                 JButton seat = seats[i][j];
-                
+
                 // Check seat availability
                 boolean isAvailable = DBManager.isSeatAvailable(
-                    selectedFunction.getMovie().getTitle(), 
-                    selectedFunction.getTime(), 
-                    seatCode
+                        selectedFunction.getMovie().getTitle(),
+                        selectedFunction.getTime(),
+                        seatCode
                 );
-                
-                // Update seat color and availability
+
+                // Update seat colors and enable/disable
                 if (isAvailable) {
                     seat.setBackground(Color.GREEN);
                     seat.setEnabled(true);
@@ -442,16 +460,16 @@ public class CinemaGUI {
             cartArea.append("No tickets selected yet.\nSelect seats to add tickets to your cart.");
             return;
         }
-        
+
         for (String item : cart) {
             cartArea.append(item);
         }
-        
-        // Add total at the bottom
+
+        // Add total
         int total = calculateTotal();
         cartArea.append(String.format("\nTOTAL: $%,d", total));
     }
-    
+
     private int calculateTotal() {
         int total = 0;
         try (ResultSet rs = DBManager.getAllTickets()) {
@@ -466,10 +484,10 @@ public class CinemaGUI {
         }
         return total;
     }
-    
+
     private boolean confirmAllTickets() {
         boolean allSuccessful = true;
-        
+
         try (ResultSet rs = DBManager.getAllTickets()) {
             while (rs != null && rs.next()) {
                 String status = rs.getString("status");
@@ -477,7 +495,7 @@ public class CinemaGUI {
                     String movie = rs.getString("movie");
                     String time = rs.getString("time");
                     String seat = rs.getString("seat");
-                    
+
                     boolean confirmed = DBManager.confirmPurchase(movie, time, seat);
                     if (!confirmed) {
                         allSuccessful = false;
@@ -488,169 +506,28 @@ public class CinemaGUI {
             e.printStackTrace();
             allSuccessful = false;
         }
-        
+
         return allSuccessful;
     }
 
-   private void showTicketsWindow() {
-    JFrame ticketFrame = new JFrame("Tickets");
-    ticketFrame.setSize(800, 500);
-    ticketFrame.setLayout(new BorderLayout());
+    private void showTicketsWindow() {
+        JFrame ticketFrame = new JFrame("Tickets");
+        ticketFrame.setSize(800, 500);
+        ticketFrame.setLayout(new BorderLayout());
 
-    String[] columns = {"ID", "Movie", "Time", "Theater", "City", "Seat", "Combo", "Total", "Status"};
-    DefaultTableModel model = new DefaultTableModel(columns, 0);
-    
-    JTable table = new JTable(model) {
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return false; // Make all cells non-editable
-        }
-    };
-    table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-    table.getTableHeader().setReorderingAllowed(false);
+        String[] columns = {"ID", "Movie", "Time", "Theater", "City", "Seat", "Combo", "Total", "Status"};
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
 
-    // Populate the table with data
-    try (ResultSet rs = DBManager.getAllTickets()) {
-        while (rs != null && rs.next()) {
-            Object[] row = {
-                rs.getInt("id"),
-                rs.getString("movie"),
-                rs.getString("time"),
-                rs.getString("theater"),
-                rs.getString("city"),
-                rs.getString("seat"),
-                rs.getString("combo"),
-                String.format("$%,d", rs.getInt("total")),
-                rs.getString("status")
-            };
-            model.addRow(row);
-        }
-    } catch (SQLException e) {
-        e.printStackTrace();
-        JOptionPane.showMessageDialog(ticketFrame, 
-            "Error loading tickets: " + e.getMessage(), 
-            "Error", 
-            JOptionPane.ERROR_MESSAGE);
-    }
-
-    // AFTER populating data, now set the renderer for the status column
-    if (table.getColumnCount() >= 9) { // Ensure status column exists
-        table.getColumnModel().getColumn(8).setCellRenderer(new DefaultTableCellRenderer() {
+        JTable table = new JTable(model) {
             @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, 
-                    boolean isSelected, boolean hasFocus, int row, int column) {
-                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                
-                if (value != null) {
-                    String status = value.toString();
-                    if ("purchased".equals(status)) {
-                        c.setForeground(Color.GREEN.darker());
-                    } else if ("reserved".equals(status)) {
-                        c.setForeground(Color.RED);
-                    } else {
-                        c.setForeground(table.getForeground()); // Reset to default
-                    }
-                }
-                
-                return c;
+            public boolean isCellEditable(int row, int column) {
+                return false; // Make all cells non-editable
             }
-        });
-    }
+        };
+        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        table.getTableHeader().setReorderingAllowed(false);
 
-    // Confirm Purchase Button
-    JButton confirmPurchaseButton = new JButton("Confirm Selected Tickets");
-    confirmPurchaseButton.addActionListener(e -> {
-        int[] selectedRows = table.getSelectedRows();
-        if (selectedRows.length == 0) {
-            JOptionPane.showMessageDialog(ticketFrame, 
-                "Please select tickets to confirm.", 
-                "No Selection", 
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        int confirmedCount = 0;
-        for (int row : selectedRows) {
-            String movie = (String) model.getValueAt(row, 1);
-            String time = (String) model.getValueAt(row, 2);
-            String seat = (String) model.getValueAt(row, 5);
-            String status = (String) model.getValueAt(row, 8);
-
-            // Only confirm reserved tickets
-            if ("reserved".equals(status)) {
-                if (DBManager.confirmPurchase(movie, time, seat)) {
-                    confirmedCount++;
-                    // Update status in the table
-                    model.setValueAt("purchased", row, 8);
-                }
-            }
-        }
-
-        JOptionPane.showMessageDialog(ticketFrame, 
-            "Confirmed " + confirmedCount + " ticket(s).", 
-            "Purchase Confirmation", 
-            JOptionPane.INFORMATION_MESSAGE);
-    });
-    
-    // Cancel Reservation Button
-    JButton cancelButton = new JButton("Cancel Selected Reservations");
-    cancelButton.addActionListener(e -> {
-        int[] selectedRows = table.getSelectedRows();
-        if (selectedRows.length == 0) {
-            JOptionPane.showMessageDialog(ticketFrame, 
-                "Please select reservations to cancel.", 
-                "No Selection", 
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        // Confirm cancelation
-        int response = JOptionPane.showConfirmDialog(ticketFrame, 
-            "Are you sure you want to cancel the selected reservations?", 
-            "Confirm Cancelation", 
-            JOptionPane.YES_NO_OPTION);
-            
-        if (response != JOptionPane.YES_OPTION) {
-            return;
-        }
-        
-        // Process selected rows in reverse order to avoid index problems
-        for (int i = selectedRows.length - 1; i >= 0; i--) {
-            int row = selectedRows[i];
-            String status = (String) model.getValueAt(row, 8);
-            
-            // Only cancel reserved tickets
-            if ("reserved".equals(status)) {
-                String movie = (String) model.getValueAt(row, 1);
-                String time = (String) model.getValueAt(row, 2);
-                String seat = (String) model.getValueAt(row, 5);
-                
-                // Delete from database
-                try {
-                    boolean deleted = deleteReservation(movie, time, seat);
-                    if (deleted) {
-                        // Remove from model
-                        model.removeRow(row);
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(ticketFrame,
-                        "Error canceling reservation: " + ex.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        }
-        
-        // Update main view
-        updateSeatsAvailability();
-    });
-
-    // Refresh Button
-    JButton refreshButton = new JButton("Refresh");
-    refreshButton.addActionListener(e -> {
-        // Refresh the table
-        model.setRowCount(0);
+        // Populate the table with data
         try (ResultSet rs = DBManager.getAllTickets()) {
             while (rs != null && rs.next()) {
                 Object[] row = {
@@ -666,35 +543,176 @@ public class CinemaGUI {
                 };
                 model.addRow(row);
             }
-        } catch (SQLException sqlE) {
-            sqlE.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(ticketFrame,
+                    "Error loading tickets: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
-        
-        // Update seat availability
-        updateSeatsAvailability();
-    });
 
-    JPanel buttonPanel = new JPanel();
-    buttonPanel.add(confirmPurchaseButton);
-    buttonPanel.add(cancelButton);
-    buttonPanel.add(refreshButton);
+        // AFTER populating data, set renderer for status column
+        if (table.getColumnCount() >= 9) { // Ensure status column exists
+            table.getColumnModel().getColumn(8).setCellRenderer(new DefaultTableCellRenderer() {
+                @Override
+                public Component getTableCellRendererComponent(JTable table, Object value,
+                        boolean isSelected, boolean hasFocus, int row, int column) {
+                    Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-    ticketFrame.add(new JScrollPane(table), BorderLayout.CENTER);
-    ticketFrame.add(buttonPanel, BorderLayout.SOUTH);
-    ticketFrame.setLocationRelativeTo(null);
-    ticketFrame.setVisible(true);
-   }
-  // Helper method to delete a reservation
+                    if (value != null) {
+                        String status = value.toString();
+                        if ("purchased".equals(status)) {
+                            c.setForeground(Color.GREEN.darker());
+                        } else if ("reserved".equals(status)) {
+                            c.setForeground(Color.RED);
+                        } else {
+                            c.setForeground(table.getForeground()); // Reset to default
+                        }
+                    }
+
+                    return c;
+                }
+            });
+        }
+
+        // Confirm Purchase Button
+        JButton confirmPurchaseButton = new JButton("Confirm Selected Tickets");
+        confirmPurchaseButton.addActionListener(e -> {
+            int[] selectedRows = table.getSelectedRows();
+            if (selectedRows.length == 0) {
+                JOptionPane.showMessageDialog(ticketFrame,
+                        "Please select tickets to confirm.",
+                        "No Selection",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int confirmedCount = 0;
+            for (int row : selectedRows) {
+                String movie = (String) model.getValueAt(row, 1);
+                String time = (String) model.getValueAt(row, 2);
+                String seat = (String) model.getValueAt(row, 5);
+                String status = (String) model.getValueAt(row, 8);
+
+                // Only confirm reserved tickets
+                if ("reserved".equals(status)) {
+                    if (DBManager.confirmPurchase(movie, time, seat)) {
+                        confirmedCount++;
+                        // Update status in the table
+                        model.setValueAt("purchased", row, 8);
+                    }
+                }
+            }
+
+            JOptionPane.showMessageDialog(ticketFrame,
+                    "Confirmed " + confirmedCount + " ticket(s).",
+                    "Purchase Confirmation",
+                    JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        // Cancel Reservation Button
+        JButton cancelButton = new JButton("Cancel Selected Reservations");
+        cancelButton.addActionListener(e -> {
+            int[] selectedRows = table.getSelectedRows();
+            if (selectedRows.length == 0) {
+                JOptionPane.showMessageDialog(ticketFrame,
+                        "Please select reservations to cancel.",
+                        "No Selection",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Confirm cancelation
+            int response = JOptionPane.showConfirmDialog(ticketFrame,
+                    "Are you sure you want to cancel the selected reservations?",
+                    "Confirm Cancelation",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (response != JOptionPane.YES_OPTION) {
+                return;
+            }
+
+            // Process selected rows in reverse order to avoid index problems
+            for (int i = selectedRows.length - 1; i >= 0; i--) {
+                int row = selectedRows[i];
+                String status = (String) model.getValueAt(row, 8);
+
+                // Only cancel reserved tickets
+                if ("reserved".equals(status)) {
+                    String movie = (String) model.getValueAt(row, 1);
+                    String time = (String) model.getValueAt(row, 2);
+                    String seat = (String) model.getValueAt(row, 5);
+
+                    // Delete from database
+                    try {
+                        boolean deleted = deleteReservation(movie, time, seat);
+                        if (deleted) {
+                            // Remove from model
+                            model.removeRow(row);
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(ticketFrame,
+                                "Error canceling reservation: " + ex.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+
+            // Update main view
+            updateSeatsAvailability();
+        });
+
+        // Refresh Button
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.addActionListener(e -> {
+            // Refresh the table
+            model.setRowCount(0);
+            try (ResultSet rs = DBManager.getAllTickets()) {
+                while (rs != null && rs.next()) {
+                    Object[] row = {
+                        rs.getInt("id"),
+                        rs.getString("movie"),
+                        rs.getString("time"),
+                        rs.getString("theater"),
+                        rs.getString("city"),
+                        rs.getString("seat"),
+                        rs.getString("combo"),
+                        String.format("$%,d", rs.getInt("total")),
+                        rs.getString("status")
+                    };
+                    model.addRow(row);
+                }
+            } catch (SQLException sqlE) {
+                sqlE.printStackTrace();
+            }
+
+            // Update seat availability
+            updateSeatsAvailability();
+        });
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(confirmPurchaseButton);
+        buttonPanel.add(cancelButton);
+        buttonPanel.add(refreshButton);
+
+        ticketFrame.add(new JScrollPane(table), BorderLayout.CENTER);
+        ticketFrame.add(buttonPanel, BorderLayout.SOUTH);
+        ticketFrame.setLocationRelativeTo(null);
+        ticketFrame.setVisible(true);
+    }
+    // Helper method to delete a reservation
+
     private boolean deleteReservation(String movie, String time, String seat) {
         // Create SQL to delete the reservation
-        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:cine.db");
-             PreparedStatement pstmt = conn.prepareStatement(
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:cine.db"); PreparedStatement pstmt = conn.prepareStatement(
                 "DELETE FROM tickets WHERE movie = ? AND time = ? AND seat = ? AND status = 'reserved'")) {
-            
+
             pstmt.setString(1, movie);
             pstmt.setString(2, time);
             pstmt.setString(3, seat);
-            
+
             int result = pstmt.executeUpdate();
             return result > 0;
         } catch (SQLException e) {
