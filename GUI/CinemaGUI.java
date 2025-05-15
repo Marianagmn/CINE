@@ -6,11 +6,10 @@ import Objects.City;
 import Objects.Function;
 import Objects.Movies;
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -61,7 +60,7 @@ public class CinemaGUI {
         Movies m1 = new Movies("Avengers", "Action", "PG-13", "Superheroes saving the world.");
         Movies m2 = new Movies("Barbie", "Fantasy", "PG", "A doll's journey.");
         Movies m3 = new Movies("Oppenheimer", "Drama", "R", "The atomic bomb story.");
-        Movies m4 = new Movies("The Lion King", "Animation", "PG", "A young lion prince’s journey.");
+        Movies m4 = new Movies("The Lion King", "Animation", "PG", "A young lion prince's journey.");
         Movies m5 = new Movies("Inception", "Sci-Fi", "PG-13", "A thief steals secrets through dream-sharing.");
         Movies m6 = new Movies("Frozen II", "Animation", "PG", "Elsa and Anna embark on a new adventure.");
 
@@ -390,7 +389,7 @@ public class CinemaGUI {
                 "Total:", price,
                 "-------------------------------------------");
 
-        // Save ticket to database - FIX FOR LINE 194
+        // Save ticket to database
         try {
             boolean saved = DBManager.saveTicket(
                     selectedFunction.getMovie().getTitle(),
@@ -643,7 +642,7 @@ public class CinemaGUI {
                     String time = (String) model.getValueAt(row, 2);
                     String seat = (String) model.getValueAt(row, 5);
 
-                    // Delete from database
+                    // Delete from database - FIX: use DBManager method instead
                     try {
                         boolean deleted = deleteReservation(movie, time, seat);
                         if (deleted) {
@@ -702,17 +701,18 @@ public class CinemaGUI {
         ticketFrame.setLocationRelativeTo(null);
         ticketFrame.setVisible(true);
     }
-    // Helper method to delete a reservation
-
+    
+    // Helper method to delete a reservation - CORREGIDO para usar MySQL
     private boolean deleteReservation(String movie, String time, String seat) {
-        // Create SQL to delete the reservation
-        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:cine.db"); PreparedStatement pstmt = conn.prepareStatement(
-                "DELETE FROM tickets WHERE movie = ? AND time = ? AND seat = ? AND status = 'reserved'")) {
-
+        // Usar DBManager para eliminar la reserva
+        try (Connection conn = DBManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(
+                 "DELETE FROM tickets WHERE movie = ? AND time = ? AND seat = ? AND status = 'reserved'")) {
+            
             pstmt.setString(1, movie);
             pstmt.setString(2, time);
             pstmt.setString(3, seat);
-
+            
             int result = pstmt.executeUpdate();
             return result > 0;
         } catch (SQLException e) {

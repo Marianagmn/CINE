@@ -5,35 +5,58 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class DBManager {
-    private static final String DB_URL = "jdbc:sqlite:cine.db";
-
+    // Configuración de la conexión a MySQL/MariaDB
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/cine";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = ""; // Password vacío para XAMPP por defecto
+    
+    // Método para inicializar la base de datos
     public static void initDatabase() {
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        // Primero intentamos crear la base de datos si no existe
+        try (Connection conn = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/", DB_USER, DB_PASSWORD);
              Statement stmt = conn.createStatement()) {
-            // Crear tabla de tickets
+            
+            // Crear la base de datos si no existe
+            stmt.execute("CREATE DATABASE IF NOT EXISTS cine");
+            System.out.println("Base de datos creada o ya existente");
+            
+        } catch (SQLException e) {
+            System.err.println("Error al crear la base de datos: " + e.getMessage());
+            e.printStackTrace();
+            return; // Salir si no podemos conectar al servidor MySQL/MariaDB
+        }
+        
+        // Ahora conectamos a la base de datos y creamos las tablas
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement()) {
+            
+            // Crear tabla de tickets (adaptada para MySQL/MariaDB)
             String ticketsTableSQL = "CREATE TABLE IF NOT EXISTS tickets (" +
-                         "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                         "movie TEXT," +
-                         "time TEXT," +
-                         "theater TEXT," +
-                         "city TEXT," +
-                         "seat TEXT," +
-                         "combo TEXT," +
-                         "total INTEGER," +
-                         "status TEXT," +  // 'reserved' or 'purchased'
-                         "reservation_time DATETIME" +
+                         "id INT PRIMARY KEY AUTO_INCREMENT," +
+                         "movie VARCHAR(100)," +
+                         "time VARCHAR(20)," +
+                         "theater VARCHAR(100)," +
+                         "city VARCHAR(50)," +
+                         "seat VARCHAR(10)," +
+                         "combo VARCHAR(100)," +
+                         "total INT," +
+                         "status VARCHAR(20)," +  // 'reserved' or 'purchased'
+                         "reservation_time DATETIME," +
+                         "INDEX idx_ticket_unique (movie, time, seat, status)" +
                          ")";
             stmt.execute(ticketsTableSQL);
-
-            // Crear un índice para mejorar el rendimiento
-            String indexSQL = "CREATE INDEX IF NOT EXISTS idx_ticket_unique ON tickets (movie, time, seat, status)";
-            stmt.execute(indexSQL);
             
             System.out.println("Base de datos inicializada correctamente");
         } catch (SQLException e) {
             System.err.println("Error al inicializar la base de datos: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+    
+    // Método para obtener una conexión a la base de datos
+    public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
     }
 
     public static boolean reserveSeat(String movie, String time, String theater, String city, 
@@ -47,7 +70,7 @@ public class DBManager {
         String sql = "INSERT INTO tickets (movie, time, theater, city, seat, combo, total, status, reservation_time) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             // Obtener la hora actual para la reserva
@@ -78,7 +101,7 @@ public class DBManager {
         String sql = "UPDATE tickets SET status = 'purchased' " +
                      "WHERE movie = ? AND time = ? AND seat = ? AND status = 'reserved'";
         
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, movie);
@@ -99,7 +122,7 @@ public class DBManager {
         String sql = "SELECT COUNT(*) FROM tickets " +
                      "WHERE movie = ? AND time = ? AND seat = ? AND status IN ('reserved', 'purchased')";
         
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, movie);
@@ -118,12 +141,12 @@ public class DBManager {
     }
 
     public static void cleanupExpiredReservations() {
-        // Eliminar reservas con más de 15 minutos de antigüedad
+        // Eliminar reservas con más de 15 minutos de antigüedad (adaptado para MySQL/MariaDB)
         String sql = "DELETE FROM tickets " +
                      "WHERE status = 'reserved' AND " +
-                     "datetime(reservation_time, '+15 minutes') < datetime('now')";
+                     "DATE_ADD(reservation_time, INTERVAL 15 MINUTE) < NOW()";
         
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
             
             int affectedRows = stmt.executeUpdate(sql);
@@ -140,7 +163,7 @@ public class DBManager {
         try {
             cleanupExpiredReservations();  // Limpiar reservas expiradas antes de mostrar
             
-            Connection conn = DriverManager.getConnection(DB_URL);
+            Connection conn = getConnection();
             Statement stmt = conn.createStatement();
             return stmt.executeQuery("SELECT * FROM tickets WHERE status = 'purchased'");
         } catch (SQLException e) {
@@ -154,7 +177,7 @@ public class DBManager {
     public static void clearTicketsForFunction(String movie, String time) {
         String sql = "DELETE FROM tickets WHERE movie = ? AND time = ? AND status = 'reserved'";
         
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, movie);
@@ -187,7 +210,7 @@ public class DBManager {
         try {
             cleanupExpiredReservations();  // Clean up any expired reservations first
             
-            Connection conn = DriverManager.getConnection(DB_URL);
+            Connection conn = getConnection();
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM tickets WHERE status IN ('reserved', 'purchased')");
             System.out.println("Obteniendo todos los tickets (reservados y comprados)");
