@@ -8,6 +8,7 @@ import Objects.Movies;
 import java.awt.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalTime;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.*;
@@ -26,6 +27,8 @@ public class CinemaGUI {
     private JTextArea cartArea;  // Text area showing selected tickets
     private java.util.List<String> cart;   // List to store selected tickets
     private Map<String, Integer> comboPrices; // Map storing combo names and prices
+    LocalTime currentTime = LocalTime.now();
+    LocalTime timeLimit = LocalTime.of(12, 0);
 
     // Lists to hold available cities, cinemas, movies, and showtimes
     private java.util.List<City> cities = new ArrayList<>();
@@ -142,7 +145,13 @@ public class CinemaGUI {
 
         // Panel to show ticket base price
         JPanel ticketPricePanel = new JPanel(new BorderLayout());
-        JLabel ticketPriceLabel = new JLabel("Base Ticket Price: $15,000");
+        JLabel ticketPriceLabel;
+        if (currentTime.isBefore(timeLimit)) {
+            ticketPriceLabel = new JLabel("Ticket price: $15.000");
+        }else{
+            ticketPriceLabel = new JLabel("Base Ticket Price: $25,000");
+        }
+        
         ticketPricePanel.add(ticketPriceLabel, BorderLayout.NORTH);
 
         // Button to view all tickets
@@ -517,8 +526,12 @@ public class CinemaGUI {
         try (ResultSet rs = DBManager.getAllTickets()) {
             while (rs != null && rs.next()) {
                 String status = rs.getString("status");
+                String seat = rs.getString("seat");
                 // Sum prices only for tickets with status "reserved"
                 if ("reserved".equals(status)) {
+                    if ("VIP".equals(seat)) {
+                    total += (rs.getInt("total")+ 10.000);    
+                    }
                     total += rs.getInt("total");
                 }
             }
