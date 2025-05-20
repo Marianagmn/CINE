@@ -167,11 +167,16 @@ public class CinemaGUI {
         JButton selectedSample = new JButton("Selected");
         selectedSample.setBackground(Color.BLUE);
         selectedSample.setEnabled(false);
+        JButton vipSample = new JButton("VIP");
+        vipSample.setBackground(Color.MAGENTA);
+        vipSample.setEnabled(false);  // VIP seats 
 
         legendPanel.add(new JLabel("Legend: "));
         legendPanel.add(availableSample);
+        legendPanel.add(vipSample);
         legendPanel.add(reservedSample);
         legendPanel.add(selectedSample);
+        
 
         selectionPanel.add(legendPanel);
 
@@ -251,6 +256,9 @@ public class CinemaGUI {
                 JButton btn = new JButton((char) ('A' + i) + String.valueOf(j + 1));
                 btn.setPreferredSize(new Dimension(60, 60));
                 btn.setBackground(Color.GREEN);
+                if (i>=3) {
+                    btn.setBackground(Color.MAGENTA);
+                }
                 int row = i, col = j;
                 btn.addActionListener(e -> handleSeatSelection(row, col));
                 seats[i][j] = btn;
