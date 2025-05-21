@@ -34,7 +34,7 @@ public class CinemaGUI {
     LocalTime timeLimit = LocalTime.of(12, 0);
 
     // Lists to hold available cities, cinemas, movies, and showtimes
-    private java.util.List<City> cities = new ArrayList<>();
+    private java.util.List<City> cities = new ArrayList<>(); // ED
     private java.util.List<Cinema> cinemas = new ArrayList<>();
     private java.util.List<Movies> movies = new ArrayList<>();
     private java.util.List<Function> functionsList = new ArrayList<>();
@@ -256,7 +256,7 @@ public class CinemaGUI {
         // Create and configure main window
         frame = new JFrame(getText("app_title"));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1000, 800);
+        frame.setSize(1700, 1040);
         frame.setLayout(new BorderLayout());
 
         // Panel with selectors (language, city, theater, function, combo, etc.)
@@ -404,7 +404,7 @@ public class CinemaGUI {
                 ticketPriceLabel.setText(getText("label_ticket_price_pm") + " + Combo: $" + comboPrice);
 
             }
-            
+
         });
 
         // Main content panel
@@ -672,7 +672,12 @@ public class CinemaGUI {
         }
         // Calculate the price of the ticket by adding the base price and combo price
         int comboPrice = comboPrices.getOrDefault(combo, 0);
-        int price = 15000 + comboPrice;
+        int price;
+        if (currentTime.isBefore(timeLimit)) {
+            price = 15000 + comboPrice;
+        } else {
+            price = 25000 + comboPrice;
+        }
         // Create the ticket details string with formatted movie, time, theater, city,
         // seat, and total price
         String item = String.format("%-15s %s\n%-15s %s\n%-15s %s\n%-15s %s\n%-15s %s\n%-15s $%,d\n%s\n",
@@ -816,7 +821,7 @@ public class CinemaGUI {
     private void showTicketsWindow() {
         // Create a new window (frame) for displaying tickets
         JFrame ticketFrame = new JFrame("Tickets");
-        ticketFrame.setSize(800, 500);
+        ticketFrame.setSize(1900, 1000);
         ticketFrame.setLayout(new BorderLayout());
 
         // Define column headers for the ticket table
