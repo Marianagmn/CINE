@@ -1,9 +1,0 @@
-{
-  /** This setting tells VSCode which external Java libraries 
-  (JAR files) to include in the project classpath
-  */ 
-  "java.project.referencedLibraries": [
-    // Path to the MySQL Connector/J driver JAR file located in the 'lib' folder
-    "lib/mysql-connector-j-8.4.0.jar"
-  ]
-}
